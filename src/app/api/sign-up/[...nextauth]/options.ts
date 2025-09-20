@@ -46,7 +46,31 @@ export const authOptions:NextAuthOptions={
     }
 
 
-      })
-      
-    ]
+      }) 
+    ],
+    callbacks:{
+      async session({ session, token }) {
+      return session
+    },
+    async jwt({ token, user }) {
+      // in this we'll extract data from user and pass it to token , so that when we have to get user related data we can get it from token instead of making db calls.
+          if(user){
+            token._id=user._id;
+            token.isVerified= user.isVerified;
+            token.isAcceptingMessages=user.isAcceptingMessages;
+            token.username=user.username;
+          }
+      return token
+    }
+    },
+    pages:{
+      signIn:"/sign-in"
+    },
+    session:{
+      strategy:"jwt"
+    },
+    secret:process.env.NEXTAUTH_SECRET,
+
+
+
 }
