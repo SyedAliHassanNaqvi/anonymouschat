@@ -61,7 +61,7 @@ export const authOptions:NextAuthOptions={
     async jwt({ token, user }) {
       // in this we'll extract data from user and pass it to token , so that when we have to get user related data we can get it from token instead of making db calls.
           if(user){
-            token._id=user._id;
+            token._id=user._id?.toString();
             token.isVerified= user.isVerified;
             token.isAcceptingMessages=user.isAcceptingMessages;
             token.username=user.username;

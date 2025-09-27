@@ -8,17 +8,17 @@ import { DefaultSession } from "next-auth";
 // we did this because we wanted to allow next-auth to add values to the token in callbacks (jwt) in options to make next auth know that these field exist in user as its user did'nt have this we had to manually modify the user module of next auth
 declare module 'next-auth'{
     interface User{
-      _id?:String; //added _id field in the existing "User" interface of next-auth
+      _id?:string; //added _id field in the existing "User" interface of next-auth
       isVerified?:boolean;
       isAcceptingMessages?:boolean;
-      username?:String 
+      username?:string 
     }
     interface Session{
       user:{
-          _id?:String; 
+          _id?:string; 
       isVerified?:boolean;
       isAcceptingMessages?:boolean;
-      username?:String 
+      username?:string 
       }& DefaultSession ['user'] // it sayss wherever there will be default session there must be a key named 'user' irrespective of k usky ander values ati hain ya ni ati
       
     }
@@ -27,9 +27,9 @@ declare module 'next-auth'{
 // another way
 declare module "next-auth/jwt"{
   interface JWT{
-    _id?:String; 
+    _id?:string; 
       isVerified?:boolean;
       isAcceptingMessages?:boolean;
-      username?:String 
+      username?:string 
   } 
   }
