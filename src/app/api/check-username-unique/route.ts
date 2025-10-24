@@ -39,12 +39,12 @@ const searchParams = url.searchParams*/
       return Response.json({
         success:false,
         message:'Username is already taken'
-      },{status:500})
+      },{status:200})
     }
     return Response.json({
         success:true,
         message:'Username is available'
-      },{status:400})
+      },{status:200})
 
   } catch (error) {
     console.log("Error checking username")

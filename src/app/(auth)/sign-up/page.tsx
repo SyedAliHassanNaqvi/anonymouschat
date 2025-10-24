@@ -6,7 +6,7 @@ import * as z  from "zod"
 import Link from "next/link"
 import {useEffect, useState } from "react"
 import {Loader2} from "lucide-react"
-import {useDebounceValue} from "usehooks-ts"
+import {useDebounceValue,useDebounceCallback} from "usehooks-ts"
 import { toast } from "sonner"
 import { useRouter } from 'next/navigation'
 import { signUpSchema } from "@/Schemas/signUpSchema"
@@ -15,6 +15,7 @@ import { ApiResponse } from "@/types/ApiResponse"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { text } from "stream/consumers"
 // we will have to check after every split of time that if the username is uniquely avalable or not. This technique is called debouncing technique. We'll use usehook ts library for debouncing 
 //   const [debouncedValue, setValue] = useDebounceValue(defaultValue, 500) jo bhi value doge wo immediately set ni hoga. Jo bhi time deingy uss time k baad set hoga like here we gave 500 milliseconds
 
@@ -23,8 +24,8 @@ const page = () => {
   const [usernameMessage,setUsernameMessage] =useState('')
   const [isCheckingUsername , setIsCheckingUsername] = useState(false)
   const [isSubmitting,setIsSubmitting]= useState(false)
-  const debouncedUsername = useDebounceValue(username,300)
-  // now we get the debouncedUsername now we'll fire the request in the backend from this variable which is the debounced way.
+  const debounced = useDebounceCallback(setUsername,300)
+  // now we get the debounced Username now we'll fire the request in the backend from this variable which is the debounced way.
 
   const router = useRouter();
 
@@ -39,32 +40,29 @@ const page = () => {
       }
   })
 // we'll  use useEffect here because we want that whenever debouncedUsername is change we have to check if it is available or not. UseEffect runs whenver the elements in element array changes like we put debouncedUsername in that array of useEffect at line 62
-  useEffect(()=>{
-    const checkUsernameUnique = async () => {
-
-      if(debouncedUsername){
-        setIsCheckingUsername(true)
-        setUsernameMessage('')
-        try {
-          const response = await axios.get(`/api/check-username-unique?username=${debouncedUsername}`)
-          console.log(response)
-          setUsernameMessage(response.data.message)
-        } catch (error) {
-          const axiosError= error as AxiosError<ApiResponse>
-          setUsernameMessage(
-            axiosError.response?.data.message ?? "Error checking Username"
-          )
-        } finally {
-          setIsCheckingUsername(false)
-        }
-
+ useEffect(() => {
+  const checkUsernameUnique = async () => {
+    if (username) {
+      setIsCheckingUsername(true)
+      setUsernameMessage('')
+      try {
+        const response = await axios.get(`/api/check-username-unique?username=${username}`)
+        console.log(response)
+        setUsernameMessage(response.data.message)
+      } catch (error) {
+        const axiosError = error as AxiosError<ApiResponse>
+        setUsernameMessage(
+          axiosError.response?.data.message ?? "Error checking Username"
+        )
+      } finally {
+        setIsCheckingUsername(false)
       }
-      
-      checkUsernameUnique()
-    
     }
-
-  },[debouncedUsername])
+  }
+  
+  checkUsernameUnique() // ✅ Now it's called correctly
+  
+}, [username])
 //z.infer is a Zod utility that extracts a TypeScript type from a Zod schema, automatically generating a type that reflects the schema's structure and data.
 
 
@@ -110,9 +108,14 @@ const page = () => {
                 <Input placeholder="username  " {...field} onChange={
                   (e)=>{
                     field.onChange(e) // updates React Hook Form’s internal state
-                  setUsername(e.target.value)// updates your local `username` for debounce checking
+                  debounced(e.target.value)// updates your local `username` for debounce checking
                    }} />
+                   
               </FormControl>
+              {isCheckingUsername && <Loader2 className="animate-spin"/>}
+              <p className={`text-sm ${usernameMessage=== "Username is available" ? 'text-green-500':'text-red-500'}`}>
+                {usernameMessage}
+              </p>
               
               <FormMessage />
             </FormItem>
